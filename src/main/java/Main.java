@@ -3,13 +3,13 @@ import java.sql.*;
 
 public class Main {
     private static final String CREATE_TABLE_SQL = """
-            CREATE TABLE message(
-            body VARCHAR(255), creation_date TIMESTAMP DEFAULT now()
+            CREATE TABLE IF NOT EXISTS posts(
+            body VARCHAR(255), fromWho VARCHAR(255), creation_date TIMESTAMP DEFAULT now()
             )
             """;
 
     private static final String INSERT_SQL = """
-            INSERT INTO message(body) VALUES(?)
+            INSERT INTO posts(body, fromWho) VALUES(?,?)
             """;
 
     private static final String SELECT_ALL = "SELECT * FROM message ";
@@ -19,20 +19,22 @@ public class Main {
 
     public static void main(String[] args) throws SQLException {
         init();
+        createPostsTable();
+        savePostsIntoDB();
     }
 
     private static void init() {
-        dataSource = JdbcUtil.createDefaultInMemoryH2DataSource();
+        dataSource = MySqlJdbcUtil.createDatasource();
     }
 
-    private static void createMessageTable() throws SQLException {
+    private static void createPostsTable() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(CREATE_TABLE_SQL);
         }
     }
 
-    private static void saveSomeMessagesIntoDB() throws SQLException {
+    private static void savePostsIntoDB() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement insertStatement = connection.prepareStatement(INSERT_SQL);
             insertSomeMessages(insertStatement);
@@ -40,10 +42,12 @@ public class Main {
     }
 
     private static void insertSomeMessages(PreparedStatement insertStatement) throws SQLException {
-        insertStatement.setString(1, "Hello!");
+        insertStatement.setString(1,"To Drugi Post" );
+        insertStatement.setString(2,"Ivan");
         insertStatement.executeUpdate();
 
-        insertStatement.setString(1, "How are you?");
+        insertStatement.setString(1, "Utworzylem DataSource");
+        insertStatement.setString(2, "John");
         insertStatement.executeUpdate();
     }
 
